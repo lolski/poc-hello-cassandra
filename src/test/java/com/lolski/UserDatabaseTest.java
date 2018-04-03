@@ -30,15 +30,15 @@ public class UserDatabaseTest {
     @Before
     public void setup() {
         UserDatabaseCassandra cassandra = new UserDatabaseCassandra("localhost", 9042,
-            UUID.randomUUID().toString().replace("-", ""),"SimpleStrategy", 1);
+            randomKeyspaceName(),"SimpleStrategy", 1);
         underTest = new UserDatabase(cassandra);
         underTest.init();
     }
 
-//    @Test
-//    public void listUser_shouldReturnEmptyList_whenNoOneHasBeenRegistered() {
-//        assertThat(underTest.list(), empty());
-//    }
+    @Test
+    public void listUser_shouldReturnEmptyList_whenNoOneHasBeenRegistered() {
+        assertThat(underTest.list(), empty());
+    }
 //
 //    @Test
 //    public void listUser_shouldReturnOneUser() {
@@ -69,4 +69,7 @@ public class UserDatabaseTest {
     // - test delete a user
     // - test delete a user, but user not found
 
+    private String randomKeyspaceName() {
+        return "keyspace_" + UUID.randomUUID().toString().replace("-", "");
+    }
 }

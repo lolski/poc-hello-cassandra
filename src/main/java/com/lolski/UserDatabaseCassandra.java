@@ -34,7 +34,7 @@ public class UserDatabaseCassandra {
 
     private void createKeyspace(Session session, String name, String replicationStrategy, int replicationFactor) {
         String query = "CREATE KEYSPACE " + name +
-            " WITH replication = {'class': '" + replicationStrategy + "', 'replication_factor': " + replicationFactor + "}";
+            " WITH replication = {'class': '" + replicationStrategy + "', 'replication_factor': " + replicationFactor + "};";
 
         session.execute(query);
     }

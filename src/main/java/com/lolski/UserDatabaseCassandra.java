@@ -19,9 +19,11 @@ public class UserDatabaseCassandra {
         this.replicationFactor = replicationFactor;
         cluster = Cluster.builder().addContactPoint(host).withPort(port).build();
     }
+
     public void init() {
         Session session = getSession();
         createKeyspace(session, keyspace, replicationStrategy, replicationFactor);
+        createUserTable(session, keyspace, "user");
     }
 
     public Session getSession() {
@@ -36,6 +38,11 @@ public class UserDatabaseCassandra {
         String query = "CREATE KEYSPACE " + name +
             " WITH replication = {'class': '" + replicationStrategy + "', 'replication_factor': " + replicationFactor + "};";
 
+        session.execute(query);
+    }
+
+    private void createUserTable(Session session, String keyspace, String table) {
+        String query = "CREATE TABLE " + keyspace + "." + table + "(id uuid PRIMARY KEY, age int);";
         session.execute(query);
     }
 }

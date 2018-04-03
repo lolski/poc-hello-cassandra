@@ -24,7 +24,7 @@ public class UserDatabaseTest {
 
     @BeforeClass
     public static void setupOnce() throws InterruptedException, IOException, TTransportException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+//        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
     }
 
     @Before

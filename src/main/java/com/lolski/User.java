@@ -1,19 +1,13 @@
 package com.lolski;
 
-public class User {
-    private String id;
-    private int age;
+import com.google.auto.value.AutoValue;
 
-    public User(String id, int age) {
-        this.id = id;
-        this.age = age;
+@AutoValue
+public abstract class User {
+    public static User create(String id, int age) {
+        return new AutoValue_User(id, age);
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public int getAge() {
-        return age;
-    }
+    public abstract String getId();
+    public abstract int getAge();
 }

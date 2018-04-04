@@ -1,15 +1,10 @@
 package com.lolski;
 
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.empty;
@@ -22,16 +17,10 @@ import static org.hamcrest.Matchers.equalTo;
 public class UserDatabaseTest {
     private UserDatabase underTest;
 
-    @BeforeClass
-    public static void setupOnce() throws InterruptedException, IOException, TTransportException {
-//        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-    }
-
     @Before
     public void setup() {
-        UserDatabaseCassandra cassandra = new UserDatabaseCassandra("localhost", 9042,
+        underTest = new UserDatabaseCassandra("localhost", 9042,
             randomKeyspaceName(),"SimpleStrategy", 1);
-        underTest = new UserDatabase(cassandra);
         underTest.init();
     }
 
@@ -39,35 +28,104 @@ public class UserDatabaseTest {
     public void listUser_shouldReturnEmptyList_whenNoOneHasBeenRegistered() {
         assertThat(underTest.list(), empty());
     }
-//
-//    @Test
-//    public void listUser_shouldReturnOneUser() {
-//        List<User> expected = Arrays.asList(new User("1", 25));
-//
-//        expected.forEach(underTest::insert);
-//
-//        List<User> actual = underTest.list();
-//        assertThat(expected, equalTo(actual));
-//    }
-//
-//    @Test
-//    public void listUser_shouldReturnTwoUsers() {
-//        List<User> expected = Arrays.asList(new User("1", 25), new User("2", 27));
-//
-//        expected.forEach(underTest::insert);
-//
-//        List<User> actual = underTest.list();
-//        assertThat(expected, equalTo(actual));
-//    }
 
-    // TODO:
-    // - test insert two non-unique users
+    @Test
+    public void listUser_shouldReturnOneUser() {
+        Set<User> expected = new HashSet<>(Arrays.asList(User.create(UUID.randomUUID().toString(), 25)));
+
+        expected.forEach(underTest::insertIfNotExists);
+
+        Set<User> actual = underTest.list();
+        assertThat(expected, equalTo(actual));
+    }
+
+    @Test
+    public void listUser_shouldReturnTwoUsers() {
+        String id1 = UUID.randomUUID().toString();
+        String id2 = UUID.randomUUID().toString();
+
+        Set<User> expected = new HashSet<>(Arrays.asList(User.create(id1, 25), User.create(id2, 27)));
+
+        expected.forEach(underTest::insertIfNotExists);
+
+        Set<User> actual = underTest.list();
+        assertThat(expected, equalTo(actual));
+    }
+
+    @Test
+    public void insertTwoUsersWithIdenticalId_theOldOneShouldBePreserved() {
+        String id1 = UUID.randomUUID().toString();
+
+        final User user1 = User.create(id1, 27);
+        final User user2 = User.create(id1, 25);
+
+        underTest.insertIfNotExists(user1);
+        underTest.insertIfNotExists(user2);
+
+        Set<User> actual = underTest.list();
+        assertThat(new HashSet<>(Arrays.asList(user1)), equalTo(actual));
+    }
 
     // - test update a user
+    @Test
+    public void updateUser_shouldExecuteProperly() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        User updatedUser1 = User.create(user1.getId(), 2);
+
+        underTest.insertIfNotExists(user1);
+        underTest.updateIfAgeIsNull(updatedUser1);
+
+        Set<User> actual = underTest.list();
+
+        assertThat(new HashSet<>(Arrays.asList(updatedUser1)), equalTo(actual));
+    }
+
     // - test update a user, but user not found
+    @Test
+    public void updateNonExistingUser_shouldInsertIt() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        User user2 = User.create(UUID.randomUUID().toString(), 2);
+
+        underTest.insertIfNotExists(user1);
+        underTest.updateIfAgeIsNull(user2);
+
+        Set<User> actual = underTest.list();
+
+        assertThat(new HashSet<>(Arrays.asList(user1, user2)), equalTo(actual));
+    }
 
     // - test delete a user
+    @Test
+    public void deleteUser_shouldExecuteProperly() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        User user2 = User.create(UUID.randomUUID().toString(), 2);
+        User user3 = User.create(UUID.randomUUID().toString(), 3);
+
+        underTest.insertIfNotExists(user1);
+        underTest.insertIfNotExists(user2);
+        underTest.insertIfNotExists(user3);
+
+        underTest.delete(user2.getId());
+
+        Set<User> actual = underTest.list();
+
+        assertThat(new HashSet<>(Arrays.asList(user1, user3)), equalTo(actual));
+    }
+
     // - test delete a user, but user not found
+    @Test
+    public void deleteNonExistingUser_shouldExecuteProperly() {
+        final User user1 = User.create(UUID.randomUUID().toString(), 1);
+        final User user2 = User.create(UUID.randomUUID().toString(), 2);
+
+        underTest.insertIfNotExists(user1);
+
+        underTest.delete(user2.getId());
+
+        Set<User> actual = underTest.list();
+
+        assertThat(new HashSet<>(Arrays.asList(user1)), equalTo(actual));
+    }
 
     private String randomKeyspaceName() {
         return "keyspace_" + UUID.randomUUID().toString().replace("-", "");

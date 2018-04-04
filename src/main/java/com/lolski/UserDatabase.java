@@ -1,41 +1,19 @@
 package com.lolski;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Hello world!
  */
-public class UserDatabase {
-    private UserDatabaseCassandra cassandra;
-
-    public static void main(String[] args) {
-        System.out.println("Hello World!");
-    }
-
-    public UserDatabase(UserDatabaseCassandra cassandra) {
-        this.cassandra = cassandra;
-    }
-
-    public void init() {
-        cassandra.init();
-    }
+public interface UserDatabase {
+    void init();
 
     // must be unique
-    public void insert(User user) {
-        throw new UnsupportedOperationException();
-    }
+    void insertIfNotExists(User user);
 
-    // throw if not found
-    public void delete(String id) {
-        throw new UnsupportedOperationException();
-    }
+    void delete(String id);
 
-    // throw if not found
-    public void update(User updated) {
-        throw new UnsupportedOperationException();
-    }
+    void updateIfAgeIsNull(User updated);
 
-    public List<User> list() {
-        throw new UnsupportedOperationException();
-    }
+    Set<User> list();
 }

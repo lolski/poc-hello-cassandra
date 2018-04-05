@@ -25,34 +25,6 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void listUser_shouldReturnEmptyList_whenNoOneHasBeenRegistered() {
-        assertThat(underTest.list(), empty());
-    }
-
-    @Test
-    public void listUser_shouldReturnOneUser() {
-        Set<User> expected = new HashSet<>(Arrays.asList(User.create(UUID.randomUUID().toString(), 25)));
-
-        expected.forEach(underTest::insertIfNotExists);
-
-        Set<User> actual = underTest.list();
-        assertThat(expected, equalTo(actual));
-    }
-
-    @Test
-    public void listUser_shouldReturnTwoUsers() {
-        String id1 = UUID.randomUUID().toString();
-        String id2 = UUID.randomUUID().toString();
-
-        Set<User> expected = new HashSet<>(Arrays.asList(User.create(id1, 25), User.create(id2, 27)));
-
-        expected.forEach(underTest::insertIfNotExists);
-
-        Set<User> actual = underTest.list();
-        assertThat(expected, equalTo(actual));
-    }
-
-    @Test
     public void insertTwoUsersWithIdenticalId_theOldOneShouldBePreserved() {
         String id1 = UUID.randomUUID().toString();
 
@@ -63,7 +35,7 @@ public class UserRepositoryTest {
         underTest.insertIfNotExists(user2);
 
         Set<User> actual = underTest.list();
-        assertThat(new HashSet<>(Arrays.asList(user1)), equalTo(actual));
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user1))));
     }
 
     // - test update a user
@@ -77,21 +49,31 @@ public class UserRepositoryTest {
 
         Set<User> actual = underTest.list();
 
-        assertThat(new HashSet<>(Arrays.asList(updatedUser1)), equalTo(actual));
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(updatedUser1))));
     }
 
-    // - test update a user, but user not found
+    // - test update a user when that particular user doesn't exist
     @Test
     public void updateNonExistingUser_shouldInsertIt() {
         User user1 = User.create(UUID.randomUUID().toString(), 1);
-        User user2 = User.create(UUID.randomUUID().toString(), 2);
 
-        underTest.insertIfNotExists(user1);
-        underTest.updateIfAgeIsNull(user2);
+        underTest.update(user1);
 
         Set<User> actual = underTest.list();
 
-        assertThat(new HashSet<>(Arrays.asList(user1, user2)), equalTo(actual));
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user1))));
+    }
+
+    // - test conditional update a user when that particular user doesn't exist
+    @Test
+    public void updateWhenAgeIsNull_shouldNotInsertNonExistingUser() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+
+        underTest.updateIfAgeIsNull(user1);
+
+        Set<User> actual = underTest.list();
+
+        assertThat(actual, empty());
     }
 
     // - test delete a user
@@ -109,7 +91,7 @@ public class UserRepositoryTest {
 
         Set<User> actual = underTest.list();
 
-        assertThat(new HashSet<>(Arrays.asList(user1, user3)), equalTo(actual));
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user1, user3))));
     }
 
     // - test delete a user, but user not found
@@ -124,7 +106,35 @@ public class UserRepositoryTest {
 
         Set<User> actual = underTest.list();
 
-        assertThat(new HashSet<>(Arrays.asList(user1)), equalTo(actual));
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user1))));
+    }
+
+    @Test
+    public void listUser_shouldReturnEmptyList_whenNoOneHasBeenRegistered() {
+        assertThat(underTest.list(), empty());
+    }
+
+    @Test
+    public void listUser_shouldReturnOneUser() {
+        Set<User> expected = new HashSet<>(Arrays.asList(User.create(UUID.randomUUID().toString(), 25)));
+
+        expected.forEach(underTest::insertIfNotExists);
+
+        Set<User> actual = underTest.list();
+        assertThat(actual, equalTo(expected));
+    }
+
+    @Test
+    public void listUser_shouldReturnTwoUsers() {
+        String id1 = UUID.randomUUID().toString();
+        String id2 = UUID.randomUUID().toString();
+
+        Set<User> expected = new HashSet<>(Arrays.asList(User.create(id1, 25), User.create(id2, 27)));
+
+        expected.forEach(underTest::insertIfNotExists);
+
+        Set<User> actual = underTest.list();
+        assertThat(actual, equalTo(expected));
     }
 
     private String randomKeyspaceName() {

@@ -67,7 +67,7 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
 
     @Override
     public Optional<User> findById(String id) {
-        String query = "SELECT * FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
+        String query = "SELECT id, age FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
         List<User> users = getSession().execute(query).all().stream()
             .map(e -> User.create(e.getUUID("id").toString(), e.getInt("age")))
             .collect(Collectors.toList());
@@ -82,11 +82,14 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
         }
     }
 
+    // TODO
     @Override
     public Set<User> findByAge(int age) {
-        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + age + ";";
-        ResultSet resultSet = getSession().execute(query);
-        return Collections.emptySet();
+        String query = "SELECT id, age FROM " + keyspace + "." + TABLE_NAME + " WHERE age = " + age + ";";
+        Set<User> users = getSession().execute(query).all().stream()
+            .map(e -> User.create(e.getUUID("id").toString(), e.getInt("age")))
+            .collect(Collectors.toSet());
+        return users;
     }
 
     @Override

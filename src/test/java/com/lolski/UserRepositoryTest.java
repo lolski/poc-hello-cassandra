@@ -25,7 +25,21 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void insertTwoUsersWithIdenticalId_theOldOneShouldBePreserved() {
+    public void insertTwoUsersWithIdenticalId_theOldOneShouldBeOverwritten() {
+        String id1 = UUID.randomUUID().toString();
+
+        final User user1 = User.create(id1, 27);
+        final User user2 = User.create(id1, 25);
+
+        underTest.insert(user1);
+        underTest.insert(user2);
+
+        Set<User> actual = underTest.list();
+        assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user2))));
+    }
+
+    @Test
+    public void insertTwoUsersWithIdenticalIdIfNotExist_theOldOneShouldBePreserved() {
         String id1 = UUID.randomUUID().toString();
 
         final User user1 = User.create(id1, 27);

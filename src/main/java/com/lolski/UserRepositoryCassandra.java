@@ -7,7 +7,7 @@ import com.datastax.driver.core.Session;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class UserDatabaseCassandra implements UserDatabase, AutoCloseable {
+public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
     public static final String TABLE_NAME = "user";
     private String host;
     private int port;
@@ -16,7 +16,7 @@ public class UserDatabaseCassandra implements UserDatabase, AutoCloseable {
     private int replicationFactor;
     private Cluster cluster;
 
-    public UserDatabaseCassandra(String host, int port, String keyspace, String replicationStrategy, int replicationFactor) {
+    public UserRepositoryCassandra(String host, int port, String keyspace, String replicationStrategy, int replicationFactor) {
         this.host = host;
         this.port = port;
         this.keyspace = keyspace;

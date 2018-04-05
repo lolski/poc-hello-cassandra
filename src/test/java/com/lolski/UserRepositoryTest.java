@@ -14,12 +14,12 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Unit test for simple App.
  */
-public class UserDatabaseTest {
-    private UserDatabase underTest;
+public class UserRepositoryTest {
+    private UserRepository underTest;
 
     @Before
     public void setup() {
-        underTest = new UserDatabaseCassandra("localhost", 9042,
+        underTest = new UserRepositoryCassandra("localhost", 9042,
             randomKeyspaceName(),"SimpleStrategy", 1);
         underTest.init();
     }

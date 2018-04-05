@@ -67,9 +67,19 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
 
     @Override
     public Optional<User> findById(String id) {
-        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
-        ResultSet resultSet = getSession().execute(query);
-        return Optional.empty();
+        String query = "SELECT * FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
+        List<User> users = getSession().execute(query).all().stream()
+            .map(e -> User.create(e.getUUID("id").toString(), e.getInt("age")))
+            .collect(Collectors.toList());
+        if (users.size() == 0) {
+            return Optional.empty();
+        }
+        else if (users.size() == 1) {
+            return Optional.of(users.get(0));
+        }
+        else {
+            throw new RuntimeException(users.size() + " users found. expected 0 or 1."); // should never happen case
+        }
     }
 
     @Override

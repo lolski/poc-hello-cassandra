@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -111,8 +112,8 @@ public class UserRepositoryTest {
     // - test delete a user, but user not found
     @Test
     public void deleteNonExistingUser_shouldExecuteProperly() {
-        final User user1 = User.create(UUID.randomUUID().toString(), 1);
-        final User user2 = User.create(UUID.randomUUID().toString(), 2);
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        User user2 = User.create(UUID.randomUUID().toString(), 2);
 
         underTest.insertIfNotExists(user1);
 
@@ -121,6 +122,43 @@ public class UserRepositoryTest {
         Set<User> actual = underTest.list();
 
         assertThat(actual, equalTo(new HashSet<>(Arrays.asList(user1))));
+    }
+
+    @Test
+    public void findById_shouldReturnUserIfFound() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        underTest.insertIfNotExists(user1);
+        Optional<User> find = underTest.findById(user1.getId());
+        assertThat(find, equalTo(Optional.of(user1)));
+    }
+
+    @Test
+    public void findById_shouldReturnEmptyIfNotFound() {
+        String nonExistingUserId = UUID.randomUUID().toString();
+        Optional<User> find = underTest.findById(nonExistingUserId);
+        assertThat(find, equalTo(Optional.empty()));
+    }
+
+    @Test
+    public void findByAge_shouldReturnUserIfFound() {
+        User user1 = User.create(UUID.randomUUID().toString(), 1);
+        User user2 = User.create(UUID.randomUUID().toString(), 2);
+        User user3 = User.create(UUID.randomUUID().toString(), 1);
+
+        underTest.insertIfNotExists(user1);
+        underTest.insertIfNotExists(user2);
+        underTest.insertIfNotExists(user3);
+
+        Set<User> find = underTest.findByAge(1);
+
+        assertThat(find, equalTo(new HashSet<>(Arrays.asList(user1, user3))));
+    }
+
+    @Test
+    public void findByAge_shouldReturnEmptyIfNotFound() {
+        Set<User> find = underTest.findByAge(1);
+        assertThat(find, empty());
+
     }
 
     @Test

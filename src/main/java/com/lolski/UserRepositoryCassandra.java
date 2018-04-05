@@ -4,6 +4,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,10 +73,10 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
     }
 
     @Override
-    public Optional<User> findByAge(String id) {
-        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
+    public Set<User> findByAge(int age) {
+        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + age + ";";
         ResultSet resultSet = getSession().execute(query);
-        return Optional.empty();
+        return Collections.emptySet();
     }
 
     @Override

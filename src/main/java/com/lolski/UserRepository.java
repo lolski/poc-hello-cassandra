@@ -18,7 +18,7 @@ public interface UserRepository {
     void delete(String id);
 
     Optional<User> findById(String id);
-    Optional<User> findByAge(String id);
+    Set<User> findByAge(int age);
 
     Set<User> list();
 }

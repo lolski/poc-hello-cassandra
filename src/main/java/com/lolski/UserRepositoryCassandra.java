@@ -4,6 +4,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,10 +34,27 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
     }
 
     @Override
+    public void insert(User user) {
+        String query = "INSERT INTO " + keyspace + "." + TABLE_NAME + " (id, age) VALUES (" + user.getId() + ", " + user.getAge() + ");";
+        getSession().execute(query);
+    }
+
+    @Override
     public void insertIfNotExists(User user) {
         String query = "INSERT INTO " + keyspace + "." + TABLE_NAME + " (id, age) VALUES (" + user.getId() + ", " + user.getAge() + ") IF NOT EXISTS;";
-        ResultSet a = getSession().execute(query);
-        return;
+        getSession().execute(query);
+    }
+
+    @Override
+    public void update(User updated) {
+        String query = "UPDATE " + keyspace + "." + TABLE_NAME + " SET age = " + updated.getAge() + " WHERE id = " + updated.getId() + ";";
+        getSession().execute(query);
+    }
+
+    @Override
+    public void updateIfAgeIsNull(User updated) {
+        String query = "UPDATE " + keyspace + "." + TABLE_NAME + " SET age = " + updated.getAge() + " WHERE id = " + updated.getId() + " IF age != null;";
+        getSession().execute(query);
     }
 
     @Override
@@ -46,9 +64,17 @@ public class UserRepositoryCassandra implements UserRepository, AutoCloseable {
     }
 
     @Override
-    public void updateIfAgeIsNull(User updated) {
-        String query = "UPDATE " + keyspace + "." + TABLE_NAME + " SET age = " + updated.getAge() + " WHERE id = " + updated.getId() + " IF age != null;";
-        getSession().execute(query);
+    public Optional<User> findById(String id) {
+        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
+        ResultSet resultSet = getSession().execute(query);
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<User> findByAge(String id) {
+        String query = "SELECT FROM " + keyspace + "." + TABLE_NAME + " WHERE id = " + id + ";";
+        ResultSet resultSet = getSession().execute(query);
+        return Optional.empty();
     }
 
     @Override
